@@ -58,6 +58,7 @@ public class Player extends CharacterMovable implements TakeVisitor {
     @Override
     public boolean canMove(Direction direction){
         boolean canMove = super.canMove(direction);
+        if(!canMove) return false;
         Position nextPos = direction.nextPosition(getPosition());
         GameObject next = game.grid().get(nextPos);
         if(next instanceof Box){
@@ -65,7 +66,7 @@ public class Player extends CharacterMovable implements TakeVisitor {
             next = game.grid().get(nextPos);
             return canMove && next == null && game.grid().inside(nextPos);
         }
-        return canMove;
+        return true;
     }
 
     @Override
@@ -77,11 +78,9 @@ public class Player extends CharacterMovable implements TakeVisitor {
                 bonus.takenBy(this);
         }
         if (next instanceof Box box){
-            game.grid().remove(nextPos);
+            box.setNextBoxDirection(direction);
             box.remove();
-            Position boxNextPos = direction.nextPosition(nextPos);
-            Box newBox = new Box(boxNextPos);
-            game.grid().set(boxNextPos, newBox);
+
         }
         setPosition(nextPos);
     }

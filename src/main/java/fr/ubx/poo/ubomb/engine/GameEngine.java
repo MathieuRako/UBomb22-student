@@ -10,6 +10,7 @@ import fr.ubx.poo.ubomb.game.Position;
 import fr.ubx.poo.ubomb.go.GameObject;
 import fr.ubx.poo.ubomb.go.character.Monster;
 import fr.ubx.poo.ubomb.go.character.Player;
+import fr.ubx.poo.ubomb.go.decor.Box;
 import fr.ubx.poo.ubomb.go.decor.Decor;
 import fr.ubx.poo.ubomb.go.decor.Princess;
 import fr.ubx.poo.ubomb.view.*;
@@ -199,13 +200,22 @@ public final class GameEngine {
     }
 
     public void cleanupSprites() {
-        sprites.forEach(sprite -> {
+        Box newBox = null;
+        for(Sprite sprite : sprites){
             GameObject go = sprite.getGameObject();
             if (go.isDeleted()) {
                 game.grid().remove(sprite.getPosition());
                 cleanUpSprites.add(sprite);
             }
-        });
+            if(go instanceof Box box && box.isNextBox()){
+                newBox = box.getNextBox();
+                game.grid().set(newBox.getPosition(), newBox);
+
+            }
+        }
+        if(newBox != null){
+            sprites.add(SpriteFactory.create(layer,newBox));
+        }
         cleanUpSprites.forEach(Sprite::remove);
         sprites.removeAll(cleanUpSprites);
         cleanUpSprites.clear();
