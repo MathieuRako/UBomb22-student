@@ -8,11 +8,10 @@ import fr.ubx.poo.ubomb.go.character.Player;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 
-public class SpritePlayer extends Sprite {
+public class SpritePlayer extends SpriteCharacter {
 
     public SpritePlayer(Pane layer, Player player) {
-        super(layer, null, player);
-        updateImage();
+        super(layer, player);
     }
 
     @Override

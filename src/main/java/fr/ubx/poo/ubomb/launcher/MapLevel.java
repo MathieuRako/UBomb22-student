@@ -14,6 +14,7 @@ public class MapLevel {
         this.grid = new Entity[height][width];
     }
 
+
     public int width() {
         return width;    }
 

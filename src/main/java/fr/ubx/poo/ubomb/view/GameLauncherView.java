@@ -13,6 +13,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.*;
+import java.util.Properties;
 
 public class GameLauncherView extends BorderPane {
     private final FileChooser fileChooser = new FileChooser();
@@ -44,14 +45,25 @@ public class GameLauncherView extends BorderPane {
         loadItem.setOnAction(e -> {
             File file = fileChooser.showOpenDialog(stage);
             if (file != null) {
-                // TODO
-                System.err.println("[TODO] Not implemented");
+                Properties config = new Properties();;
+                Reader in;
+                try {
+                    in = new FileReader(file);
+                    config.load(in);
+                } catch (FileNotFoundException ex) {
+                    throw new RuntimeException(ex);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+                Game game = GameLauncher.load(config);
+                GameEngine engine = new GameEngine(game, stage);
+                engine.start();
             }
         });
 
 
         defaultItem.setOnAction(e -> {
-            Game game = GameLauncher.load();
+            Game game = GameLauncher.loadDefault();
             GameEngine engine = new GameEngine(game, stage);
             engine.start();
         });
@@ -60,6 +72,7 @@ public class GameLauncherView extends BorderPane {
         exitItem.setOnAction(e -> System.exit(0));
 
     }
+
 
 
 }

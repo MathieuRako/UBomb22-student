@@ -15,7 +15,7 @@ public class MapLevelDefault extends MapLevel {
             {Empty, Tree, Tree, Tree, Empty, Empty, Empty, Empty, Empty, Stone, Empty, Empty},
             {Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty},
             {Stone, Stone, Stone, Stone, Stone, Empty, Empty, Empty, Stone, Stone, Empty, Stone},
-            {Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty},
+            {Empty, Empty, Empty, Empty, Empty, Empty, Monster, Box, Princess, Empty, Empty, Empty},
             {Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty}
     };
     private final static int width = 12;

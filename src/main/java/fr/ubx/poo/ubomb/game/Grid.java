@@ -1,6 +1,7 @@
 package fr.ubx.poo.ubomb.game;
 
 
+import fr.ubx.poo.ubomb.go.GameObject;
 import fr.ubx.poo.ubomb.go.decor.Decor;
 
 import java.util.*;
@@ -15,8 +16,11 @@ public interface Grid {
 
     Collection<Decor> values();
 
-
     boolean inside(Position nextPos);
 
     void set(Position position, Decor decor);
+
+
+    List<Position> getMonsterPositions();
+    List<Position> getBoxesPositions();
 }

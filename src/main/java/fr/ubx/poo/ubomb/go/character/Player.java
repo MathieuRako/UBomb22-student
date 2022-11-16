@@ -4,33 +4,71 @@
 
 package fr.ubx.poo.ubomb.go.character;
 
-import fr.ubx.poo.ubomb.engine.Timer;
 import fr.ubx.poo.ubomb.game.Direction;
 import fr.ubx.poo.ubomb.game.Game;
 import fr.ubx.poo.ubomb.game.Position;
 import fr.ubx.poo.ubomb.go.GameObject;
-import fr.ubx.poo.ubomb.go.Movable;
 import fr.ubx.poo.ubomb.go.TakeVisitor;
+import fr.ubx.poo.ubomb.go.decor.Box;
 import fr.ubx.poo.ubomb.go.decor.bonus.*;
 
-public class Player extends GameObject implements Movable, TakeVisitor {
+public class Player extends CharacterMovable implements TakeVisitor {
 
-    private Direction direction;
-    private boolean moveRequested = false;
-    private final int lives;
+    private static final int nbKeysDefault = 0;
+    private static final int bombRangeDefault = 1;
+    private static final int nbBombsDefault = 0;
+
+    private int nbBombs;
+    private int bombRange;
+
+    private int nbKeys;
 
     public Player(Game game, Position position) {
-        super(game, position);
-        this.direction = Direction.DOWN;
-        this.lives = game.configuration().playerLives();
+        super(game, position, game.configuration().playerLives());
+        nbKeys = nbKeysDefault;
+        bombRange = bombRangeDefault;
+        nbBombs = nbBombsDefault;
+    }
+
+    public int getNbBombs(){
+        return nbBombs;
+    }
+
+    public int getBombRange(){
+        return bombRange;
+    }
+
+    public int getNbKeys(){
+        return nbKeys;
     }
 
 
+    public void updateNbBombs(int delta){
+        nbBombs += delta;
+    }
+    public void updateBombRange(int delta){
+        bombRange += delta;
+    }
     @Override
     public void take(Key key) {
-        System.out.println("Take the key ...");
+        nbKeys ++;
+        key.remove();
     }
 
+    @Override
+    public boolean canMove(Direction direction){
+        boolean canMove = super.canMove(direction);
+        Position nextPos = direction.nextPosition(getPosition());
+        GameObject next = game.grid().get(nextPos);
+        if(next instanceof Box){
+            nextPos = direction.nextPosition(nextPos);
+            next = game.grid().get(nextPos);
+            return canMove && next == null && game.grid().inside(nextPos);
+        }
+        return canMove;
+    }
+
+    @Override
     public void doMove(Direction direction) {
         // This method is called only if the move is possible, do not check again
         Position nextPos = direction.nextPosition(getPosition());
@@ -38,42 +76,13 @@ public class Player extends GameObject implements Movable, TakeVisitor {
         if (next instanceof Bonus bonus) {
                 bonus.takenBy(this);
         }
+        if (next instanceof Box box){
+            game.grid().remove(nextPos);
+            box.remove();
+            Position boxNextPos = direction.nextPosition(nextPos);
+            Box newBox = new Box(boxNextPos);
+            game.grid().set(boxNextPos, newBox);
+        }
         setPosition(nextPos);
-    }
-
-
-    public int getLives() {
-        return lives;
-    }
-
-    public Direction getDirection() {
-        return direction;
-    }
-
-    public void requestMove(Direction direction) {
-        if (direction != this.direction) {
-            this.direction = direction;
-            setModified(true);
-        }
-        moveRequested = true;
-    }
-
-    public final boolean canMove(Direction direction) {
-        // Need to be updated ;-)
-        return true;
-    }
-
-    public void update(long now) {
-        if (moveRequested) {
-            if (canMove(direction)) {
-                doMove(direction);
-            }
-        }
-        moveRequested = false;
-    }
-
-    @Override
-    public void explode() {
-        // TODO
     }
 }

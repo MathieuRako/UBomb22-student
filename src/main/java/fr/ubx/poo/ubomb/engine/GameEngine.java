@@ -7,11 +7,12 @@ package fr.ubx.poo.ubomb.engine;
 import fr.ubx.poo.ubomb.game.Direction;
 import fr.ubx.poo.ubomb.game.Game;
 import fr.ubx.poo.ubomb.game.Position;
+import fr.ubx.poo.ubomb.go.GameObject;
+import fr.ubx.poo.ubomb.go.character.Monster;
 import fr.ubx.poo.ubomb.go.character.Player;
-import fr.ubx.poo.ubomb.view.ImageResource;
-import fr.ubx.poo.ubomb.view.Sprite;
-import fr.ubx.poo.ubomb.view.SpriteFactory;
-import fr.ubx.poo.ubomb.view.SpritePlayer;
+import fr.ubx.poo.ubomb.go.decor.Decor;
+import fr.ubx.poo.ubomb.go.decor.Princess;
+import fr.ubx.poo.ubomb.view.*;
 import javafx.animation.AnimationTimer;
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
@@ -38,9 +39,12 @@ public final class GameEngine {
     private static AnimationTimer gameLoop;
     private final Game game;
     private final Player player;
+
+    private final List<Monster> monsters;
     private final List<Sprite> sprites = new LinkedList<>();
     private final Set<Sprite> cleanUpSprites = new HashSet<>();
     private final Stage stage;
+
     private StatusBar statusBar;
     private Pane layer;
     private Input input;
@@ -49,6 +53,7 @@ public final class GameEngine {
         this.stage = stage;
         this.game = game;
         this.player = game.player();
+        this.monsters = game.getMonster();
         initialize();
         buildAndSetGameLoop();
     }
@@ -56,6 +61,7 @@ public final class GameEngine {
     private void initialize() {
         Group root = new Group();
         layer = new Pane();
+
 
         int height = game.grid().height();
         int width = game.grid().width();
@@ -78,6 +84,10 @@ public final class GameEngine {
         for (var decor : game.grid().values()) {
             sprites.add(SpriteFactory.create(layer, decor));
             decor.setModified(true);
+        }
+
+        for (var monster : monsters){
+            sprites.add(new SpriteMonster(layer, monster));
         }
 
         sprites.add(new SpritePlayer(layer, player));
@@ -103,6 +113,8 @@ public final class GameEngine {
         };
     }
 
+
+
     private void checkExplosions() {
         // Check explosions of bombs
     }
@@ -126,7 +138,19 @@ public final class GameEngine {
     }
 
     private void checkCollision(long now) {
-        // Check a collision between a monster and the player
+        Position playerPosition = player.getPosition();
+        for(var monster : monsters){
+            if(monster.getPosition().equals(playerPosition) && player.isModified()) {
+                player.reduceLives(1);
+                System.out.println(player.getLives());
+                break;
+            }
+        }
+        if (game.grid().get(playerPosition) instanceof Princess){
+            gameLoop.stop();
+            showMessage("Gagné!", Color.GREEN);
+        }
+
     }
 
     private void processInput(long now) {
@@ -176,7 +200,8 @@ public final class GameEngine {
 
     public void cleanupSprites() {
         sprites.forEach(sprite -> {
-            if (sprite.getGameObject().isDeleted()) {
+            GameObject go = sprite.getGameObject();
+            if (go.isDeleted()) {
                 game.grid().remove(sprite.getPosition());
                 cleanUpSprites.add(sprite);
             }
@@ -185,7 +210,7 @@ public final class GameEngine {
         sprites.removeAll(cleanUpSprites);
         cleanUpSprites.clear();
     }
-
+    
     private void render() {
         sprites.forEach(Sprite::render);
     }
