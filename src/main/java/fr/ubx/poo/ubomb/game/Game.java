@@ -40,13 +40,20 @@ public class Game {
         player = new Player(this, configuration.playerPosition());
     }
 
+    public GameObject getNextGo(Position position, Direction direction){
+        Position nextPos = direction.nextPosition(position);
+        return this.grid().get(nextPos);
+    }
     public int getLevel(){
         return level;
     }
 
     public void updateLevel(boolean up){
-        if(up && level + 1 <= grids.length) level ++ ;
-        else if(!up && level - 1 >= 1) level -- ;
+        System.out.println(level);
+        System.out.println(grids.length);
+        System.out.println(up);
+        if(up && level + 1 <= grids.length) level++;
+        else if(!up && level - 1 >= 1) level--;
         else throw new RuntimeException("Level update impossible : level out of bounds");
     }
 

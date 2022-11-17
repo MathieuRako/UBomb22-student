@@ -74,24 +74,24 @@ public class Level implements Grid {
                         break;
                     case DoorNextClosed:
                         if(!isDoorNext()) {
-                            Door door = new Door(position, false, false);
+                            Door door = new Door(position, false, true);
                             elements.put(position, door);
                             doorNext = door;
                         }
-                        else throw new MapException("Only one up down for a level");
+                        else throw new MapException("Only one up door for a level");
                         break;
                     case DoorNextOpened:
                         if(!isDoorNext()) {
-                            Door door = new Door(position, true, false);
+                            Door door = new Door(position, true, true);
                             elements.put(position, door);
                             doorNext = door;
                         }
-                        else throw new MapException("Only one up down for a level");
+                        else throw new MapException("Only one up door for a level");
                         break;
                     case DoorPrevOpened:
                         if(doorPrevious == null)
-                        this.doorPrevious = position;
-                        else throw new MapException("Only one door down for a level");
+                            this.doorPrevious = position;
+                        else throw new MapException("Only one down door for a level");
                         break;
                     case Monster:
                         monsterPositions.add(position);

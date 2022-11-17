@@ -48,7 +48,7 @@ public class GameLauncher {
 
         MapLevelMaker mlm = new MapLevelMaker();
         Boolean isPrincess = false;
-        Door lastDoor = null;
+        Door door = null;
         for(int i = 1; i <= nbLevels; i++){
             MapLevel ml = mlm.load(config.getProperty("level" + i), compression);
             Level level = new Level(ml);
@@ -58,14 +58,15 @@ public class GameLauncher {
             }
             if(level.isDoorNext() && i == nbLevels) throw new MapException("No up door at the last floor");
             else if(!level.isDoorNext() && i != nbLevels) throw new MapException("An up door is needed at every floor that isn't last");
-            else if(level.isDoorNext()) lastDoor = level.getDoorNext();
+            else if(level.isDoorNext()) door = level.getDoorNext();
             if(level.isDoorPrevious() && i == 1) throw new MapException("No down door at first floor");
             else if(!level.isDoorPrevious() && i != 1) throw new MapException("A down door is needed at every floor that isn't first");
-            else if(level.isDoorPrevious()) level.set(level.getDoorPrevious(),lastDoor);
+            else if(level.isDoorPrevious()){
 
+                level.set(level.getDoorPrevious(),door);
+                door.setPositionUp(level.getDoorPrevious());
 
-
-
+            }
             grids[i-1] = level;
 
         }

@@ -23,6 +23,9 @@ public abstract class CharacterMovable extends GameObject implements Movable {
         setPosition(nextPos);
     }
 
+    public void setDirection(Direction direction){
+        this.direction = direction;
+    }
     public void reduceLives(int nb){
         lives = lives - nb;
     }

@@ -11,7 +11,7 @@ import fr.ubx.poo.ubomb.go.GameObject;
 import fr.ubx.poo.ubomb.go.character.Monster;
 import fr.ubx.poo.ubomb.go.character.Player;
 import fr.ubx.poo.ubomb.go.decor.Box;
-import fr.ubx.poo.ubomb.go.decor.Decor;
+import fr.ubx.poo.ubomb.go.decor.Door;
 import fr.ubx.poo.ubomb.go.decor.Princess;
 import fr.ubx.poo.ubomb.view.*;
 import javafx.animation.AnimationTimer;
@@ -41,7 +41,7 @@ public final class GameEngine {
     private final Game game;
     private final Player player;
 
-    private final List<Monster> monsters;
+    private final List<Monster> monsters = new LinkedList<>();
     private final List<Sprite> sprites = new LinkedList<>();
     private final Set<Sprite> cleanUpSprites = new HashSet<>();
     private final Stage stage;
@@ -54,7 +54,7 @@ public final class GameEngine {
         this.stage = stage;
         this.game = game;
         this.player = game.player();
-        this.monsters = game.getMonster();
+
         initialize();
         buildAndSetGameLoop();
     }
@@ -62,7 +62,7 @@ public final class GameEngine {
     private void initialize() {
         Group root = new Group();
         layer = new Pane();
-
+        monsters.addAll(game.getMonster());
 
         int height = game.grid().height();
         int width = game.grid().width();
@@ -83,6 +83,9 @@ public final class GameEngine {
 
         // Create sprites
         for (var decor : game.grid().values()) {
+            if(decor instanceof Door){
+                System.out.println(((Door) decor).getUpPosition());
+            }
             sprites.add(SpriteFactory.create(layer, decor));
             decor.setModified(true);
         }
@@ -92,6 +95,11 @@ public final class GameEngine {
         }
 
         sprites.add(new SpritePlayer(layer, player));
+    }
+
+    private void clear(){
+        sprites.clear();
+        monsters.clear();
     }
 
     void buildAndSetGameLoop() {
@@ -107,7 +115,7 @@ public final class GameEngine {
                 checkExplosions();
 
                 // Graphic update
-                cleanupSprites();
+                updateSprites();
                 render();
                 statusBar.update(game);
             }
@@ -147,11 +155,35 @@ public final class GameEngine {
                 break;
             }
         }
-        if (game.grid().get(playerPosition) instanceof Princess){
+        GameObject go = game.grid().get(playerPosition);
+        if (go instanceof Princess){
             gameLoop.stop();
             showMessage("Gagné!", Color.GREEN);
         }
+        else if(go instanceof Door door){
+            if(!door.isOpen()) throw new RuntimeException("try to access to a close door");
+            boolean isUp = door.isUp();
+            Position newPos;
+            if(isUp){
+                newPos = door.getUpPosition();
+            }
+            else{
+                newPos = door.getPosition();
+            }
+            System.out.println(door.getPosition());
+            System.out.println(door.getUpPosition());
+            door.changeUp();
+            System.out.println(door.getPosition());
+            game.updateLevel(isUp);
+            player.setPosition(Direction.DOWN.nextPosition(newPos));
+            player.setDirection(Direction.DOWN);
 
+
+            gameLoop.stop();
+            clear();
+            initialize();
+
+        }
     }
 
     private void processInput(long now) {
@@ -167,6 +199,8 @@ public final class GameEngine {
             player.requestMove(Direction.RIGHT);
         } else if (input.isMoveUp()) {
             player.requestMove(Direction.UP);
+        } else if (input.isKey()){
+            player.tryOpenDoor();
         }
         input.clear();
     }
@@ -199,7 +233,7 @@ public final class GameEngine {
         }
     }
 
-    public void cleanupSprites() {
+    public void updateSprites() {
         Box newBox = null;
         for(Sprite sprite : sprites){
             GameObject go = sprite.getGameObject();
@@ -210,8 +244,8 @@ public final class GameEngine {
             if(go instanceof Box box && box.isNextBox()){
                 newBox = box.getNextBox();
                 game.grid().set(newBox.getPosition(), newBox);
-
             }
+
         }
         if(newBox != null){
             sprites.add(SpriteFactory.create(layer,newBox));

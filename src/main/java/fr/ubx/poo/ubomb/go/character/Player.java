@@ -10,6 +10,7 @@ import fr.ubx.poo.ubomb.game.Position;
 import fr.ubx.poo.ubomb.go.GameObject;
 import fr.ubx.poo.ubomb.go.TakeVisitor;
 import fr.ubx.poo.ubomb.go.decor.Box;
+import fr.ubx.poo.ubomb.go.decor.Door;
 import fr.ubx.poo.ubomb.go.decor.bonus.*;
 
 public class Player extends CharacterMovable implements TakeVisitor {
@@ -43,6 +44,7 @@ public class Player extends CharacterMovable implements TakeVisitor {
     }
 
 
+
     public void updateNbBombs(int delta){
         nbBombs += delta;
     }
@@ -60,7 +62,7 @@ public class Player extends CharacterMovable implements TakeVisitor {
         boolean canMove = super.canMove(direction);
         if(!canMove) return false;
         Position nextPos = direction.nextPosition(getPosition());
-        GameObject next = game.grid().get(nextPos);
+        GameObject next = game.getNextGo(this.getPosition(), direction);
         if(next instanceof Box){
             nextPos = direction.nextPosition(nextPos);
             next = game.grid().get(nextPos);
@@ -80,8 +82,15 @@ public class Player extends CharacterMovable implements TakeVisitor {
         if (next instanceof Box box){
             box.setNextBoxDirection(direction);
             box.remove();
-
         }
         setPosition(nextPos);
+    }
+
+    public void tryOpenDoor() {
+        GameObject next = game.getNextGo(this.getPosition(), this.getDirection());
+        if(next instanceof Door door && !door.isOpen() && nbKeys > 0){
+            door.open();
+            nbKeys --;
+        }
     }
 }

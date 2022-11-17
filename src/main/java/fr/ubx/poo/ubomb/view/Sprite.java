@@ -43,6 +43,7 @@ public class Sprite {
 
     public final void render() {
         if (gameObject.isModified()) {
+            System.out.println(gameObject.getClass().toString());
             if (imageView != null) {
                 remove();
             }
