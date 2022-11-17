@@ -5,6 +5,8 @@ import fr.ubx.poo.ubomb.go.decor.Box;
 import fr.ubx.poo.ubomb.go.GameObject;
 import fr.ubx.poo.ubomb.go.character.Monster;
 import fr.ubx.poo.ubomb.go.character.Player;
+import fr.ubx.poo.ubomb.go.decor.Door;
+import fr.ubx.poo.ubomb.launcher.MapException;
 
 
 import java.util.LinkedList;
@@ -20,7 +22,6 @@ public class Game {
     private int level;
     private final List<Monster>[] monsters;
 
-
     private List<Bomb> bombs= new LinkedList<Bomb>();
 
     public Game(Configuration configuration, Grid[] grids) {
@@ -34,10 +35,26 @@ public class Game {
                 monsters[i] = new LinkedList<>();
                 for (var position : grids[i].getMonsterPositions()){
                     monsters[i].add(new Monster(this, position, 1));}
+
             }
         }
 
         player = new Player(this, configuration.playerPosition());
+    }
+
+    public Position changeLevel(Door door){
+        Boolean goUp = door.goUp();
+        try {
+            if (goUp){
+                level ++;
+                return grids[level].getDoorToDown().getPosition();
+            }
+            level --;
+            return grids[level].getDoorToUp().getPosition();
+        }
+        catch(ArrayIndexOutOfBoundsException e){
+            throw new MapException("Door out of levels");
+        }
     }
 
     public GameObject getNextGo(Position position, Direction direction){

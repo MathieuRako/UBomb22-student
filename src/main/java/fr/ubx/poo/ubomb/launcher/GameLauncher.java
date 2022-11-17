@@ -56,17 +56,6 @@ public class GameLauncher {
                 if (isPrincess) throw new MapException("Only one princess per game");
                 else isPrincess = true;
             }
-            if(level.isDoorNext() && i == nbLevels) throw new MapException("No up door at the last floor");
-            else if(!level.isDoorNext() && i != nbLevels) throw new MapException("An up door is needed at every floor that isn't last");
-            else if(level.isDoorNext()) door = level.getDoorNext();
-            if(level.isDoorPrevious() && i == 1) throw new MapException("No down door at first floor");
-            else if(!level.isDoorPrevious() && i != 1) throw new MapException("A down door is needed at every floor that isn't first");
-            else if(level.isDoorPrevious()){
-
-                level.set(level.getDoorPrevious(),door);
-                door.setPositionUp(level.getDoorPrevious());
-
-            }
             grids[i-1] = level;
 
         }

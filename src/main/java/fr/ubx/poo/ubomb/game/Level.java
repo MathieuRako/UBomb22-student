@@ -16,12 +16,12 @@ public class Level implements Grid {
 
     private final MapLevel entities;
 
-    private Position doorPrevious;
+
 
     private boolean isPrincess;
 
-
-    private Door doorNext;
+    private Door doorToDown;
+    private Door doorToUp;
     private final Map<Position, Decor> elements = new HashMap<>();
 
     private final List<Position> boxes = new LinkedList<>();
@@ -73,24 +73,28 @@ public class Level implements Grid {
                         elements.put(position, new BombNumber(position, true));
                         break;
                     case DoorNextClosed:
-                        if(!isDoorNext()) {
-                            Door door = new Door(position, false, true);
+                        if(!isDoorToUp()) {
+                            Door door = new Door(position, false);
                             elements.put(position, door);
-                            doorNext = door;
+                            doorToUp = door;
                         }
                         else throw new MapException("Only one up door for a level");
                         break;
                     case DoorNextOpened:
-                        if(!isDoorNext()) {
-                            Door door = new Door(position, true, true);
+                        if(!isDoorToUp()) {
+                            Door door = new Door(position, true);
                             elements.put(position, door);
-                            doorNext = door;
+                            doorToUp = door;
                         }
                         else throw new MapException("Only one up door for a level");
                         break;
                     case DoorPrevOpened:
-                        if(doorPrevious == null)
-                            this.doorPrevious = position;
+                        if(!isDoorToDown()) {
+                            Door door = new Door(position);
+                            elements.put(position, door);
+                            this.doorToDown = door;
+
+                        }
                         else throw new MapException("Only one down door for a level");
                         break;
                     case Monster:
@@ -144,19 +148,20 @@ public class Level implements Grid {
         return isPrincess;
     }
 
-    public boolean isDoorNext(){
-        return doorNext != null ;
+    private boolean isDoorToUp(){
+        return doorToUp != null ;
     }
 
-    public boolean isDoorPrevious(){
-        return doorPrevious != null;
+    private boolean isDoorToDown(){
+        return doorToDown != null;
     }
 
-    public Door getDoorNext(){
-        return doorNext;
+    public Door getDoorToUp(){
+        return doorToUp;
     }
-    public Position getDoorPrevious(){
-        return doorPrevious;
+
+    public Door getDoorToDown(){
+        return doorToDown;
     }
     @Override
     public boolean inside(Position position) {

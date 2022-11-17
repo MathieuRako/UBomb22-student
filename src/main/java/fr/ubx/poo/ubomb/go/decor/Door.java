@@ -7,22 +7,23 @@ import fr.ubx.poo.ubomb.go.character.CharacterMovable;
 
 public class Door extends Decor implements Walkable {
 
-    int level;
     private boolean oppened;
 
-    private boolean up;
-    private Position positionUp;
+    private boolean goUp;
 
 
-    public Door(Position position, boolean oppened, boolean up) {
+    public Door(Position position, boolean oppened) {
         super(position);
         this.oppened = oppened;
-        this.up = up;
+        this.goUp = true;
     }
 
-    public void setPositionUp(Position pos){
-        positionUp = pos;
+    public Door(Position position){
+        super(position);
+        this.oppened = true;
+        this.goUp = false;
     }
+
     public boolean isOpen(){
         return oppened;
     }
@@ -37,19 +38,8 @@ public class Door extends Decor implements Walkable {
         return oppened;
     }
 
-    public boolean isUp(){
-        return up;
+    public boolean goUp(){
+        return goUp;
     }
 
-    public void changeUp(){
-        up = !up;
-    }
-
-    @Override
-    public Position getPosition(){
-        return up ? super.getPosition() : positionUp;
-    }
-    public Position getUpPosition() {
-        return positionUp;
-    }
 }

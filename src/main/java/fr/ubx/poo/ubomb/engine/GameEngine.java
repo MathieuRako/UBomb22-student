@@ -83,9 +83,6 @@ public final class GameEngine {
 
         // Create sprites
         for (var decor : game.grid().values()) {
-            if(decor instanceof Door){
-                System.out.println(((Door) decor).getUpPosition());
-            }
             sprites.add(SpriteFactory.create(layer, decor));
             decor.setModified(true);
         }
@@ -162,27 +159,12 @@ public final class GameEngine {
         }
         else if(go instanceof Door door){
             if(!door.isOpen()) throw new RuntimeException("try to access to a close door");
-            boolean isUp = door.isUp();
-            Position newPos;
-            if(isUp){
-                newPos = door.getUpPosition();
-            }
-            else{
-                newPos = door.getPosition();
-            }
-            System.out.println(door.getPosition());
-            System.out.println(door.getUpPosition());
-            door.changeUp();
-            System.out.println(door.getPosition());
-            game.updateLevel(isUp);
+            Position newPos = game.changeLevel(door);
             player.setPosition(Direction.DOWN.nextPosition(newPos));
             player.setDirection(Direction.DOWN);
-
-
             gameLoop.stop();
             clear();
             initialize();
-
         }
     }
 
