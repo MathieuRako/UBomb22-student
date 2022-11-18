@@ -1,17 +1,17 @@
 package fr.ubx.poo.ubomb.go.decor.bonus;
 
 import fr.ubx.poo.ubomb.game.Position;
+import fr.ubx.poo.ubomb.go.character.Player;
 
-public class BombRange extends Bonus{
+public class BombRange extends BombBonus{
 
-    private final boolean increase;
     public BombRange(Position position, boolean inc){
-
-        super(position);
-        increase = inc;
+        super(position, inc);
     }
 
-    public boolean isIncrease(){
-        return increase;
+    @Override
+    public void takenBy(Player player) {
+        player.take(this);
     }
+
 }

@@ -17,9 +17,10 @@ public class Player extends CharacterMovable implements TakeVisitor {
 
     private static final int nbKeysDefault = 0;
     private static final int bombRangeDefault = 1;
-    private static final int nbBombsDefault = 0;
+    private static final int nbBombsDefault = 1;
 
     private int nbBombs;
+
     private int bombRange;
 
     private int nbKeys;
@@ -45,16 +46,22 @@ public class Player extends CharacterMovable implements TakeVisitor {
 
 
 
-    public void updateNbBombs(int delta){
-        nbBombs += delta;
-    }
-    public void updateBombRange(int delta){
-        bombRange += delta;
-    }
     @Override
-    public void take(Key key) {
-        nbKeys ++;
-        key.remove();
+    public void take(Bonus bonus) {
+        if(bonus instanceof Key) {
+            nbKeys++;
+        }
+        else if(bonus instanceof BombNumber bn){
+            int nb = nbBombs + bn.getDelta();
+            if (nb >= 1 && nb <= game.configuration().bombBagCapacity()) nbBombs = nb;
+        }
+        else if(bonus instanceof BombRange br){
+            if (bombRange + br.getDelta() >= 1) bombRange += br.getDelta();
+        }
+        else if(bonus instanceof Heart){
+            this.increaseLives();
+        }
+        bonus.remove();
     }
 
     @Override

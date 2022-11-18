@@ -7,6 +7,7 @@ package fr.ubx.poo.ubomb.engine;
 import fr.ubx.poo.ubomb.game.Direction;
 import fr.ubx.poo.ubomb.game.Game;
 import fr.ubx.poo.ubomb.game.Position;
+import fr.ubx.poo.ubomb.go.Bomb;
 import fr.ubx.poo.ubomb.go.GameObject;
 import fr.ubx.poo.ubomb.go.character.Monster;
 import fr.ubx.poo.ubomb.go.character.Player;
@@ -37,11 +38,15 @@ import java.util.Set;
 
 public final class GameEngine {
 
+
     private static AnimationTimer gameLoop;
     private final Game game;
     private final Player player;
 
-    private final List<Monster> monsters = new LinkedList<>();
+    private Position requestBomb;
+    private Monster[] monsters;
+
+    private List<Bomb> bombs;
     private final List<Sprite> sprites = new LinkedList<>();
     private final Set<Sprite> cleanUpSprites = new HashSet<>();
     private final Stage stage;
@@ -54,7 +59,6 @@ public final class GameEngine {
         this.stage = stage;
         this.game = game;
         this.player = game.player();
-
         initialize();
         buildAndSetGameLoop();
     }
@@ -62,7 +66,9 @@ public final class GameEngine {
     private void initialize() {
         Group root = new Group();
         layer = new Pane();
-        monsters.addAll(game.getMonster());
+        monsters = game.getMonster();
+        bombs = game.getBomb();
+        System.out.println(monsters.length);
 
         int height = game.grid().height();
         int width = game.grid().width();
@@ -86,18 +92,14 @@ public final class GameEngine {
             sprites.add(SpriteFactory.create(layer, decor));
             decor.setModified(true);
         }
-
         for (var monster : monsters){
             sprites.add(new SpriteMonster(layer, monster));
+            monster.setModified(true);
         }
 
         sprites.add(new SpritePlayer(layer, player));
     }
 
-    private void clear(){
-        sprites.clear();
-        monsters.clear();
-    }
 
     void buildAndSetGameLoop() {
         gameLoop = new AnimationTimer() {
@@ -141,11 +143,20 @@ public final class GameEngine {
 
     private void createNewBombs(long now) {
         // Create a new Bomb is needed
+        if(requestBomb != null){
+            Bomb bomb = new Bomb(game, requestBomb);
+            game.addBomb(bomb);
+            bombs.add(bomb);
+            bomb.setModified(true);
+            sprites.add(SpriteFactory.create(layer, bomb));
+            System.out.println("hihi");
+        }
+        requestBomb = null;
     }
 
     private void checkCollision(long now) {
         Position playerPosition = player.getPosition();
-        for(var monster : monsters){
+        for(Monster monster : monsters){
             if(monster.getPosition().equals(playerPosition) && player.isModified()) {
                 player.reduceLives(1);
                 System.out.println(player.getLives());
@@ -162,8 +173,7 @@ public final class GameEngine {
             Position newPos = game.changeLevel(door);
             player.setPosition(Direction.DOWN.nextPosition(newPos));
             player.setDirection(Direction.DOWN);
-            gameLoop.stop();
-            clear();
+            sprites.clear();
             initialize();
         }
     }
@@ -183,6 +193,9 @@ public final class GameEngine {
             player.requestMove(Direction.UP);
         } else if (input.isKey()){
             player.tryOpenDoor();
+        }
+        else if (input.isBomb()){
+            requestBomb = player.getPosition();
         }
         input.clear();
     }
@@ -208,7 +221,15 @@ public final class GameEngine {
 
     private void update(long now) {
         player.update(now);
+        for(Bomb bomb : bombs){
+            bomb.update(now);
+            if(bomb.isChanged()) {
+                bomb.setModified(true);
+                bomb.setChanged(false);
+                System.out.println(bomb.getState());
+            }
 
+        }
         if (player.getLives() == 0) {
             gameLoop.stop();
             showMessage("Perdu!", Color.RED);
@@ -227,11 +248,11 @@ public final class GameEngine {
                 newBox = box.getNextBox();
                 game.grid().set(newBox.getPosition(), newBox);
             }
-
         }
         if(newBox != null){
             sprites.add(SpriteFactory.create(layer,newBox));
         }
+
         cleanUpSprites.forEach(Sprite::remove);
         sprites.removeAll(cleanUpSprites);
         cleanUpSprites.clear();

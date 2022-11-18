@@ -9,6 +9,8 @@ import fr.ubx.poo.ubomb.go.decor.Door;
 import fr.ubx.poo.ubomb.launcher.MapException;
 
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -22,16 +24,18 @@ public class Game {
     private int level;
     private final List<Monster>[] monsters;
 
-    private List<Bomb> bombs= new LinkedList<Bomb>();
+    private final List<Bomb>[] bombs;
 
     public Game(Configuration configuration, Grid[] grids) {
         this.configuration = configuration;
         monsters = new LinkedList[grids.length];
+        bombs = new LinkedList[grids.length];
         this.grids = grids;
         this.level = 1;
 
         for(int i = 0; i < grids.length; i++){
             {
+                bombs[i] = new LinkedList<>();
                 monsters[i] = new LinkedList<>();
                 for (var position : grids[i].getMonsterPositions()){
                     monsters[i].add(new Monster(this, position, 1));}
@@ -42,15 +46,27 @@ public class Game {
         player = new Player(this, configuration.playerPosition());
     }
 
+    public void addBomb(Bomb bomb){
+        bombs[level-1].add(bomb);
+    }
+
+    public List<Bomb> getBombs(){
+        return bombs[level-1];
+    }
+
     public Position changeLevel(Door door){
         Boolean goUp = door.goUp();
         try {
+            Position p;
             if (goUp){
                 level ++;
-                return grids[level].getDoorToDown().getPosition();
+                p = grids[level - 1].getDoorToDown().getPosition();
             }
-            level --;
-            return grids[level].getDoorToUp().getPosition();
+            else {
+                level--;
+                p = grids[level - 1].getDoorToUp().getPosition();
+            }
+            return p;
         }
         catch(ArrayIndexOutOfBoundsException e){
             throw new MapException("Door out of levels");
@@ -88,7 +104,7 @@ public class Game {
                 gos.add(monster);
             }
         }
-        for(var bomb : bombs){
+        for(var bomb : bombs[level - 1]){
             if (bomb.getPosition().equals(position)){
                 gos.add(bomb);
             }
@@ -106,7 +122,13 @@ public class Game {
     }
 
 
-    public List<Monster> getMonster() {
-        return monsters[level-1];
+    public List<Bomb> getBomb(){
+        return bombs[level-1];
+    }
+
+    public Monster[] getMonster() {
+
+        return monsters[level-1].toArray(new Monster[monsters[level-1].size()]);
+
     }
 }
